@@ -13,14 +13,18 @@ class PhotController extends Controller
     $file = $request->file('file');
 
     // s3を使用した場合
-    // Storage::disk('s3')->putFile('/', $file, 'public');
+    $path = Storage::disk('s3')->putFile('/', $file, 'public');
+    $path = Storage::disk('minio')->url($path);
+    $pathArray = explode('/', $path);
+    $pathArray[2] = 'localhost:9000';
+    $newPathArray = implode('/', $pathArray);
 
     // webサーバを使用した場合
-    $path = Storage::put('/public', $file);
-    $path = explode('/', $path);
+    // $path = Storage::put('/public', $file);
+    // $path = explode('/', $path);
 
     Post::insert([
-        'image' => $path[1],
+        'image' => $newPathArray,
     ]);
 
     return redirect('/');
@@ -28,7 +32,7 @@ class PhotController extends Controller
 
     public function show()
     {
-        $memo = Post::where('id', 1)->first();
+        $memo = Post::where('id', 6)->first();
         return view('show',compact('memo'));
     }
 }
