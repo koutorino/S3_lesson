@@ -3,3 +3,5 @@
     <input type="file" name="file">
     <button type="submit">保存</button>
 </form>
+
+<a href="{{ route('show') }}">ここをクリックしてな</a>
