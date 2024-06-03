@@ -1,14 +1,20 @@
+{{-- <img src="{{ '' . $memo['image']}}" class='w-100 mb-3'/> --}}
 
-{{ Form::open(['route' => 'store', 'method' => 'POST']) }}
-{{ Form::text('title', null, ['placeholder' => 'Title']) }}
-{{ Form::textarea('content', null, ['placeholder' => 'content']) }}
-<form action="" method="post" enctype="multipart/form-data">
-    {{ csrf_field() }}
-    <input type="file" name="file">
-    <button type="submit">保存</button>
-</form>
-{{ Form::submit('Add')}}
-{{ Form::close() }}
-
-<a href="{{ route('show') }}">ここをクリックしてな</a>
-
+<table >
+    <thead>
+      <tr >
+        <th>Title</th>
+        <th>Content</th>
+        <th>image</th>
+      </tr>
+    </thead>
+    <tbody>
+      @foreach ($posts as $post)
+        <tr>
+          <td>{{ $post->title }}</td>
+          <td>{{ $post->content }}</td>
+          <td><img src='{{ $post->image }}'></td>
+        </tr>
+      @endforeach
+    </tbody>
+  </table>

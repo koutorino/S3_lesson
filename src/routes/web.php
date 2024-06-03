@@ -19,6 +19,7 @@ Route::get('/', function () {
 
 Route::namespace('App\Http\Controllers')->group(function () {
     Route::get('/', 'PostController@index')->name('index');
+    Route::get('/create', 'PostController@create')->name('create');
     Route::post('/', 'PostController@upload')->name('upload');
     Route::post('/', 'PostController@store')->name('store');
     Route::get('/show', 'PostController@show')->name('show');

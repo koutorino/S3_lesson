@@ -10,8 +10,14 @@ class PostController extends Controller
 {
     public function index()
     {
+        // $posts = Post::all();
         $posts = Post::all();
-        return view('index');
+        return view('index', compact('posts'));
+    }
+
+    public function create()
+    {
+        return view('create');
     }
 
     // createじゃ何故かうごかなかった。
@@ -22,7 +28,7 @@ class PostController extends Controller
         $content = $request->input('content');
 
         //画像の処理
-        $file = $request->file('file');
+        $file = $request->file('image');
         $path = Storage::disk('s3')->putFile('/', $file, 'public');
         $path = Storage::disk('minio')->url($path);
         $pathArray = explode('/', $path);
@@ -34,9 +40,10 @@ class PostController extends Controller
             'title' => $title,
             'content' => $content,
             'image' => $newPath,
+            'created_at' => now(),
+            'updated_at' => now()
         ]);
 
-        return response()->json(Post::all());
         return redirect('/');
     }
 
