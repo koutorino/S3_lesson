@@ -47,9 +47,9 @@ class PostController extends Controller
         return redirect('/');
     }
 
-    public function show($id)
+    public function show()
     {
-        $post = Post::where('id', 6)->first();
+        $post = Post::where('id', 1)->first();
         return view('show', compact('post'));
     }
 
