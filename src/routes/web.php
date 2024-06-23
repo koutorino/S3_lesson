@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PhotController;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,5 +18,12 @@ Route::get('/', function () {
 });
 
 Route::namespace('App\Http\Controllers')->group(function () {
-    Route::post('/upload', 'PhotController@upload')->name('upload');
-    });
+    Route::get('/', 'PostController@index')->name('index');
+    Route::get('/create', 'PostController@create')->name('create');
+    Route::post('/', 'PostController@store')->name('store');
+    Route::get('/show', 'PostController@show')->name('show');
+    Route::put('/update', 'PostController@update')->name('update');
+    Route::post('/destroy', 'PostController@destroy')->name('destroy');
+    Route::get('/like/{id}', 'LikeController@like')->name('post.like');
+    Route::get('/unlike/{id}', 'LikeController@unlike')->name('post.unlike');
+});
