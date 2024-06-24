@@ -4,6 +4,8 @@ on:
     paths:
       - database/migrations/**
       - config/database.php
+    branches:
+      - develop
 
 jobs:
   tbls:
