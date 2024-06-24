@@ -39,6 +39,11 @@ jobs:
       - name: Check PHP extensions
         run: php -m
 
+      - name: Check working directory
+        run: |
+          pwd
+          ls -la
+
       - name: Validate composer.json
         run: composer validate
 
