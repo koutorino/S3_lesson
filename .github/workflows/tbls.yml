@@ -1,0 +1,114 @@
+name: update er graph
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  tbls:
+    name: generate-and-push
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_DATABASE: laravel
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+
+      - name: Copy .env
+        run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+
+      - name: Update Composer dependencies
+        run: |
+          cd src/
+          composer update --no-interaction --no-progress
+
+      - name: Regenerate composer.lock
+        run: |
+            cd src/
+            rm composer.lock
+            composer install --no-interaction --no-progress
+
+      - name: Install Dependencies
+        run: |
+          cd src/
+          composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
+      - name: Start Docker containers
+        run: docker-compose up -d
+
+      - name: Create .env file in Docker container
+        run: |
+          docker-compose exec -T app cp .env.example .env
+
+      - name: Generate app key in Docker container
+        run: |
+          docker-compose exec -T app php artisan key:generate
+
+      - name: Check Docker containers
+        run: docker-compose ps
+
+      - name: Update .env file
+        run: |
+          docker-compose exec -T app sed -i 's/DB_HOST=.*/DB_HOST=db/' .env
+          docker-compose exec -T app sed -i 's/DB_DATABASE=.*/DB_DATABASE=laravel/' .env
+          docker-compose exec -T app sed -i 's/DB_USERNAME=.*/DB_USERNAME=phper/' .env
+          docker-compose exec -T app sed -i 's/DB_PASSWORD=.*/DB_PASSWORD=secret/' .env
+
+      - name: Test database connection
+        run: |
+          docker-compose exec -T app php artisan tinker --execute="try { DB::connection()->getPdo(); echo 'Connected successfully to: ' . DB::connection()->getDatabaseName(); } catch (\Exception \$e) { echo 'Connection failed: ' . \$e->getMessage(); }"
+
+      - name: Run migrations in Docker container
+        run: |
+          docker-compose exec -T app php artisan migrate
+
+      - name: Install tbls
+        run: |
+          curl -sL https://git.io/use-tbls > use-tbls.tmp && . ./use-tbls.tmp && rm ./use-tbls.tmp
+
+      - name: Generate ER diagram
+        run: tbls doc
+
+      - name: Count uncommit files
+        id: check_diff
+        run: |
+          git status --porcelain | wc -l
+          file_count=$(git status --porcelain | wc -l)
+          echo "::set-output name=file_count::$file_count"
+
+      - name: Commit ER graph
+        if: ${{ steps.check_diff.outputs.file_count != '0' }}
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .
+          git commit -m "generate er graphs from actions"
+          git push
+
+      - name: Report commit on pull request
+        if: ${{ steps.check_diff.outputs.file_count != '0' }}
+        uses: actions/github-script@v4
+        with:
+          script: |
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: 'Actions committed new ER files🤖'
+            })
