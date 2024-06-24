@@ -63,6 +63,17 @@ jobs:
       - name: Check Docker containers
         run: docker-compose ps
 
+      - name: Update .env file
+        run: |
+          docker-compose exec -T app sed -i 's/DB_HOST=.*/DB_HOST=db/' .env
+          docker-compose exec -T app sed -i 's/DB_DATABASE=.*/DB_DATABASE=laravel/' .env
+          docker-compose exec -T app sed -i 's/DB_USERNAME=.*/DB_USERNAME=phper/' .env
+          docker-compose exec -T app sed -i 's/DB_PASSWORD=.*/DB_PASSWORD=secret/' .env
+
+      - name: Test database connection
+        run: |
+          docker-compose exec -T app php artisan tinker --execute="try { DB::connection()->getPdo(); echo 'Connected successfully to: ' . DB::connection()->getDatabaseName(); } catch (\Exception \$e) { echo 'Connection failed: ' . \$e->getMessage(); }"
+
       - name: Run migrations in Docker container
         run: |
           docker-compose exec -T app php artisan migrate
