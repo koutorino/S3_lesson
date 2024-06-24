@@ -60,6 +60,9 @@ jobs:
         run: |
           docker-compose exec -T app php artisan key:generate
 
+      - name: Check Docker containers
+        run: docker-compose ps
+
       - name: Run migrations in Docker container
         run: |
           docker-compose exec -T app php artisan migrate
