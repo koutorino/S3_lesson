@@ -1,9 +1,8 @@
 name: update er graph
 on:
-  pull_request:
-    paths:
-      - database/migrations/**
-      - config/database.php
+  push:
+    branches:
+      - develop
 
 jobs:
   tbls:
