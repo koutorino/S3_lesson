@@ -60,15 +60,9 @@ jobs:
         run: |
           docker-compose exec -T app php artisan key:generate
 
-      - name: Generate key
+      - name: Run migrations in Docker container
         run: |
-          cd src/
-          php artisan key:generate
-
-      - name: Execute migrations
-        run: |
-          cd src/
-          php artisan migrate
+          docker-compose exec -T app php artisan migrate
 
       - name: Install tbls
         run: |
