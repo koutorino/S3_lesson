@@ -49,6 +49,17 @@ jobs:
           cd src/
           composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
+      - name: Start Docker containers
+        run: docker-compose up -d
+
+      - name: Create .env file in Docker container
+        run: |
+          docker-compose exec -T app cp .env.example .env
+
+      - name: Generate app key in Docker container
+        run: |
+          docker-compose exec -T app php artisan key:generate
+
       - name: Generate key
         run: |
           cd src/
